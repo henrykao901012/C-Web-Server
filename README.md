@@ -74,7 +74,7 @@ build help         # Windows: build.exe help
 ```
 
 ## 📁 專案結構
-
+```
 project/
 ├── build.c
 ├── README.md
@@ -98,6 +98,7 @@ project/
 │   └── json.h
 └── www/
     └── index.html
+```
 
 ## 💡 使用範例
 
