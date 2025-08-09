@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <regex.h>
 #include "router.h"
-#include "../core/logger.h"
+#include "logger.h"
 
 static Route routes[MAX_ROUTES];
 static int route_count = 0;
@@ -33,10 +32,25 @@ void router_add(HttpMethod method, const char *pattern, RouteHandler handler)
 // 解析路徑參數 (例如 /users/:id 匹配 /users/123)
 static int match_route(const char *pattern, const char *path, Request *req)
 {
+    // 完全匹配的情況
+    if (strcmp(pattern, path) == 0)
+    {
+        return 1;
+    }
+
+    // 帶參數的路由匹配
     char pattern_copy[256];
     char path_copy[256];
     strcpy(pattern_copy, pattern);
     strcpy(path_copy, path);
+
+    // 如果路徑結尾有 /，移除它
+    int plen = strlen(pattern_copy);
+    int pathlen = strlen(path_copy);
+    if (plen > 1 && pattern_copy[plen - 1] == '/')
+        pattern_copy[plen - 1] = '\0';
+    if (pathlen > 1 && path_copy[pathlen - 1] == '/')
+        path_copy[pathlen - 1] = '\0';
 
     char *pattern_token = strtok(pattern_copy, "/");
     char *path_token = strtok(path_copy, "/");
@@ -68,12 +82,15 @@ static int match_route(const char *pattern, const char *path, Request *req)
 
 void router_handle(Request *req, Response *res)
 {
+    log_message(LOG_DEBUG, "Router handling path: %s, method: %s", req->path, get_method_string(req->method));
+
     for (int i = 0; i < route_count; i++)
     {
         if (routes[i].method == req->method)
         {
             if (match_route(routes[i].pattern, req->path, req))
             {
+                log_message(LOG_INFO, "Matched route: %s", routes[i].pattern);
                 routes[i].handler(req, res);
                 return;
             }
@@ -81,7 +98,8 @@ void router_handle(Request *req, Response *res)
     }
 
     // 沒有匹配的路由，返回 404
-    set_response(res, 404, "text/html", "<h1>404 Not Found</h1>");
+    log_message(LOG_WARNING, "No route matched for: %s", req->path);
+    set_response(res, 404, "application/json", "{\"error\":\"Not Found\"}");
 }
 
 void router_cleanup(void)

@@ -11,10 +11,10 @@
 #include <sys/socket.h>
 #endif
 
-#include "../core/http_handler.h"
-#include "../core/server.h"
-#include "../core/logger.h"
-#include "../core/file_utils.h"
+#include "http_handler.h"
+#include "server.h"
+#include "logger.h"
+#include "file_utils.h"
 #include "router.h"
 
 int router_enabled = 1; // 框架模式啟用路由

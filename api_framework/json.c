@@ -75,6 +75,25 @@ void json_add_bool(JsonBuilder *json, const char *key, int value)
     json->size += strlen(temp);
 }
 
+void json_start_array(JsonBuilder *json, const char *key)
+{
+    json_add_comma(json);
+    size_t needed = strlen(key) + 10;
+    json_ensure_capacity(json, needed);
+
+    char temp[256];
+    sprintf(temp, "\"%s\":[", key);
+    strcat(json->buffer, temp);
+    json->size += strlen(temp);
+}
+
+void json_end_array(JsonBuilder *json)
+{
+    json_ensure_capacity(json, 2);
+    strcat(json->buffer, "]");
+    json->size++;
+}
+
 char *json_get_string(JsonBuilder *json)
 {
     json_ensure_capacity(json, 2);
